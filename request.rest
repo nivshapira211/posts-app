@@ -1,13 +1,21 @@
 @baseUrl = http://localhost:3000
 
-### Health
+### ============================================
+### GENERAL ENDPOINTS
+### ============================================
+
+### Health check
 GET {{baseUrl}}/
 
-### List posts
+### ============================================
+### POST ENDPOINTS
+### ============================================
+
+### List all posts
 GET {{baseUrl}}/posts
 
-### Create post
-POST {{baseUrl}}/posts
+### Create a new post
+POST {{baseUrl}}/post
 Content-Type: application/json
 
 {
@@ -16,8 +24,11 @@ Content-Type: application/json
   "sender": "Niv"
 }
 
-# Get a single post by ID
-GET http://localhost:3000/posts/6738b7b2944556561a86110a
+### Get posts by sender (query parameter)
+GET {{baseUrl}}/post?sender=Niv
+
+### Get a single post by ID
+GET {{baseUrl}}/post/6738b7b2944556561a86110a
 
 ### ============================================
 ### COMMENT ENDPOINTS
