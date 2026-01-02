@@ -18,3 +18,35 @@ Content-Type: application/json
 
 # Get a single post by ID
 GET http://localhost:3000/posts/6738b7b2944556561a86110a
+
+### ============================================
+### COMMENT ENDPOINTS
+### ============================================
+
+### Create a new comment
+POST {{baseUrl}}/comment
+Content-Type: application/json
+
+{
+  "postId": "6738b7b2944556561a86110a",
+  "sender": "Alice",
+  "body": "This is a great post!"
+}
+
+### Get all comments for a specific post
+GET {{baseUrl}}/post/6738b7b2944556561a86110a/comments
+
+### Get a single comment by ID
+GET {{baseUrl}}/comment/REPLACE_WITH_COMMENT_ID
+
+### Update a comment
+PUT {{baseUrl}}/comment/REPLACE_WITH_COMMENT_ID
+Content-Type: application/json
+
+{
+  "body": "Updated comment text",
+  "sender": "Alice"
+}
+
+### Delete a comment
+DELETE {{baseUrl}}/comment/REPLACE_WITH_COMMENT_ID
