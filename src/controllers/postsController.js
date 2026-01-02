@@ -19,3 +19,13 @@ export async function listPosts(req, res) {
   }
 }
 
+export async function getPost(req, res) {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Not found" });
+    res.json(post);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
