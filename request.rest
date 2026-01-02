@@ -1,0 +1,18 @@
+@baseUrl = http://localhost:3000
+
+### Health
+GET {{baseUrl}}/
+
+### List posts
+GET {{baseUrl}}/posts
+
+### Create post
+POST {{baseUrl}}/posts
+Content-Type: application/json
+
+{
+  "title": "My first post",
+  "body": "Hello from REST client",
+  "publisher": "Niv"
+}
+
