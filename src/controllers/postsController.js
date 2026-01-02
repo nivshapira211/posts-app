@@ -29,3 +29,16 @@ export async function getPost(req, res) {
   }
 }
 
+export async function getPostsBySender(req, res) {
+  try {
+    const { sender } = req.query;
+    if (!sender) {
+      return res.status(400).json({ error: "sender parameter is required" });
+    }
+    const posts = await Post.find({ publisher: sender }).sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
