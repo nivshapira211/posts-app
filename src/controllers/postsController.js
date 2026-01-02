@@ -2,8 +2,8 @@ import Post from "../models/post.js";
 
 export async function createPost(req, res) {
   try {
-    const { title, body, publisher } = req.body;
-    const post = await Post.create({ title, body, publisher });
+    const { title, body, sender } = req.body;
+    const post = await Post.create({ title, body, sender });
     res.status(201).json(post);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -36,8 +36,8 @@ export async function getPostsBySender(req, res) {
     if (!sender) {
       return res.status(400).json({ error: "sender parameter is required" });
     }
-    // Filter posts to only return those created by the specified publisher
-    const posts = await Post.find({ publisher: sender }).sort({ createdAt: -1 });
+    // Filter posts to only return those created by the specified sender
+    const posts = await Post.find({ sender: sender }).sort({ createdAt: -1 });
     res.json(posts);
   } catch (err) {
     res.status(500).json({ error: err.message });

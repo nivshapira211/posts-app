@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", (req, res) => res.send("Hello, World!"));
 
-router.post("/posts", postsController.createPost);
+router.post("/post", postsController.createPost);
 router.get("/posts", postsController.listPosts);
 // Specific route must come before parameterized route
 router.get("/post", postsController.getPostsBySender);
