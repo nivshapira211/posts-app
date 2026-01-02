@@ -7,8 +7,9 @@ router.get("/", (req, res) => res.send("Hello, World!"));
 
 router.post("/posts", postsController.createPost);
 router.get("/posts", postsController.listPosts);
-router.get("/posts/:id", postsController.getPost);
+// Specific route must come before parameterized route
 router.get("/post", postsController.getPostsBySender);
+router.get("/post/:id", postsController.getPost);
 
 
 export default router;

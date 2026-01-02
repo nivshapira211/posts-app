@@ -31,10 +31,12 @@ export async function getPost(req, res) {
 
 export async function getPostsBySender(req, res) {
   try {
+    console.log("getPostsBySender called with query:", req.query);
     const { sender } = req.query;
     if (!sender) {
       return res.status(400).json({ error: "sender parameter is required" });
     }
+    // Filter posts to only return those created by the specified publisher
     const posts = await Post.find({ publisher: sender }).sort({ createdAt: -1 });
     res.json(posts);
   } catch (err) {
