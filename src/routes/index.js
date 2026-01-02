@@ -10,6 +10,7 @@ router.get("/posts", postsController.listPosts);
 // Specific route must come before parameterized route
 router.get("/post", postsController.getPostsBySender);
 router.get("/post/:id", postsController.getPost);
+router.put("/post/:id", postsController.updatePost);
 
 
 export default router;
