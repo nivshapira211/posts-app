@@ -13,8 +13,8 @@ export function createApp() {
     // Create post
     app.post("/posts", async (req, res) => {
         try {
-            const { title, body } = req.body;
-            const post = await Post.create({ title, body });
+            const { title, body, publisher } = req.body;
+            const post = await Post.create({ title, body, publisher });
             res.status(201).json(post);
         } catch (err) {
             res.status(400).json({ error: err.message });
