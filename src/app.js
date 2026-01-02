@@ -21,6 +21,15 @@ export function createApp() {
         }
     });
 
+    // List posts
+    app.get("/posts", async (req, res) => {
+        try {
+            const posts = await Post.find().sort({ createdAt: -1 });
+            res.json(posts);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
 
     return app;
 }
