@@ -1,3 +1,1 @@
-# posts-app
-# posts-app
-# posts-app
+This is a Posts APP by Niv Shapira and Ofek Saar
