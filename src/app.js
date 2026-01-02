@@ -1,35 +1,11 @@
 import express from "express";
-import Post from "./models/post.js";
+import routes from "./routes/index.js";
 
 export function createApp() {
-    const app = express();
+  const app = express();
 
-    app.use(express.json());
+  app.use(express.json());
+  app.use(routes);
 
-    app.get("/", (req, res) => {
-        res.send("Hello, World!");
-    });
-
-    // Create post
-    app.post("/posts", async (req, res) => {
-        try {
-            const { title, body, publisher } = req.body;
-            const post = await Post.create({ title, body, publisher });
-            res.status(201).json(post);
-        } catch (err) {
-            res.status(400).json({ error: err.message });
-        }
-    });
-
-    // List posts
-    app.get("/posts", async (req, res) => {
-        try {
-            const posts = await Post.find().sort({ createdAt: -1 });
-            res.json(posts);
-        } catch (err) {
-            res.status(500).json({ error: err.message });
-        }
-    });
-
-    return app;
+  return app;
 }
