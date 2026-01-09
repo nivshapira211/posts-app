@@ -4,7 +4,7 @@ import * as commentsController from "../controllers/commentsController.js";
 
 const router = express.Router();
 
-router.get("/", (req, res) => res.send("Hello, World!"));
+router.get("/", (req, res) => res.send("Hello, This is Niv&Ofek posts app!"));
 
 // Post routes
 router.post("/post", postsController.createPost);

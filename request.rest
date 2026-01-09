@@ -19,16 +19,26 @@ POST {{baseUrl}}/post
 Content-Type: application/json
 
 {
-  "title": "My first post",
+  "title": "My third post",
   "body": "Hello from REST client",
-  "sender": "Niv"
+  "sender": "Ofek"
 }
 
 ### Get posts by sender (query parameter)
 GET {{baseUrl}}/post?sender=Niv
 
 ### Get a single post by ID
-GET {{baseUrl}}/post/6738b7b2944556561a86110a
+GET {{baseUrl}}/post/6960eb69acd0a11fddf3a61e
+
+### Update a post
+PUT {{baseUrl}}/post/6960eb69acd0a11fddf3a61e
+Content-Type: application/json
+
+{
+  "title": "Updated title",
+  "body": "Updated body content",
+  "sender": "Niv"
+}
 
 ### ============================================
 ### COMMENT ENDPOINTS
@@ -39,19 +49,19 @@ POST {{baseUrl}}/comment
 Content-Type: application/json
 
 {
-  "postId": "6738b7b2944556561a86110a",
-  "sender": "Alice",
+  "postId": "6960eb69acd0a11fddf3a61e",
+  "sender": "Yoav",
   "body": "This is a great post!"
 }
 
 ### Get all comments for a specific post
-GET {{baseUrl}}/post/6738b7b2944556561a86110a/comments
+GET {{baseUrl}}/post/6960eb69acd0a11fddf3a61e/comments
 
 ### Get a single comment by ID
-GET {{baseUrl}}/comment/REPLACE_WITH_COMMENT_ID
+GET {{baseUrl}}/comment/6960f391acd0a11fddf3a651
 
 ### Update a comment
-PUT {{baseUrl}}/comment/REPLACE_WITH_COMMENT_ID
+PUT {{baseUrl}}/comment/6960f391acd0a11fddf3a651
 Content-Type: application/json
 
 {
@@ -60,4 +70,4 @@ Content-Type: application/json
 }
 
 ### Delete a comment
-DELETE {{baseUrl}}/comment/REPLACE_WITH_COMMENT_ID
+DELETE {{baseUrl}}/comment/6960f391acd0a11fddf3a651
