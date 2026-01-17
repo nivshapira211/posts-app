@@ -2,6 +2,7 @@ import request from 'supertest';
 import { createApp } from '../src/app.js';
 import Post from '../src/models/post.js';
 import Comment from '../src/models/comment.js';
+import User from '../src/models/user.js';
 import { disconnect } from '../src/db.js';
 
 describe('API Routes', () => {
@@ -9,6 +10,10 @@ describe('API Routes', () => {
   const TEST_MONGODB_URI = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/posts-app-test';
 
   beforeAll(async () => {
+    // Set environment variables for testing
+    process.env.JWT_SECRET = 'test_secret';
+    process.env.JWT_REFRESH_SECRET = 'test_refresh_secret';
+
     // Wait for app to be created with MongoDB connection
     app = await createApp(TEST_MONGODB_URI);
   });
@@ -17,13 +22,29 @@ describe('API Routes', () => {
     // Clean up database and disconnect
     await Post.deleteMany({});
     await Comment.deleteMany({});
+    await User.deleteMany({});
     await disconnect();
   });
+
+  let accessToken;
+  let testUserId;
 
   beforeEach(async () => {
     // Clean up before each test
     await Post.deleteMany({});
     await Comment.deleteMany({});
+    await User.deleteMany({});
+
+    // Register and login a test user
+    const userData = {
+      username: 'TestUser',
+      email: 'test@example.com',
+      password: 'password123'
+    };
+    await request(app).post('/auth/register').send(userData);
+    const res = await request(app).post('/auth/login').send(userData);
+    accessToken = res.body.accessToken;
+    testUserId = res.body._id;
   });
 
   describe('POST /post', () => {
@@ -31,24 +52,25 @@ describe('API Routes', () => {
       const postData = {
         title: 'Test Post',
         body: 'This is a test post',
-        sender: 'TestUser',
       };
 
       const response = await request(app)
         .post('/post')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(postData)
         .expect(201);
 
       expect(response.body).toHaveProperty('_id');
       expect(response.body.title).toBe(postData.title);
       expect(response.body.body).toBe(postData.body);
-      expect(response.body.sender).toBe(postData.sender);
+      expect(response.body.sender).toBe(testUserId);
       expect(response.body).toHaveProperty('createdAt');
     });
 
     test('should return 400 if required fields are missing', async () => {
       const response = await request(app)
         .post('/post')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send({ body: 'Missing title and sender' })
         .expect(400);
 
@@ -60,6 +82,7 @@ describe('API Routes', () => {
     test('should return empty array when no posts exist', async () => {
       const response = await request(app)
         .get('/posts')
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body).toEqual([]);
@@ -80,6 +103,7 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .get('/posts')
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body).toHaveLength(2);
@@ -108,6 +132,7 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .get('/post')
+        .set('Authorization', `Bearer ${accessToken}`)
         .query({ sender: 'User1' })
         .expect(200);
 
@@ -118,6 +143,7 @@ describe('API Routes', () => {
     test('should return 400 if sender parameter is missing', async () => {
       const response = await request(app)
         .get('/post')
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
@@ -135,6 +161,7 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .get(`/post/${post._id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body._id).toBe(post._id.toString());
@@ -145,6 +172,7 @@ describe('API Routes', () => {
       const fakeId = '507f1f77bcf86cd799439011';
       const response = await request(app)
         .get(`/post/${fakeId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(404);
 
       expect(response.body).toHaveProperty('error');
@@ -153,6 +181,7 @@ describe('API Routes', () => {
     test('should return 400 for invalid ID format', async () => {
       const response = await request(app)
         .get('/post/invalid-id')
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
@@ -175,18 +204,20 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .put(`/post/${post._id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(updateData)
         .expect(200);
 
       expect(response.body.title).toBe(updateData.title);
       expect(response.body.body).toBe(updateData.body);
-      expect(response.body.sender).toBe(updateData.sender);
+      expect(response.body.sender).toBe('OriginalSender');
     });
 
     test('should return 404 if post not found', async () => {
       const fakeId = '507f1f77bcf86cd799439011';
       const response = await request(app)
         .put(`/post/${fakeId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .send({ title: 'Updated', body: 'Updated', sender: 'Updated' })
         .expect(404);
 
@@ -204,24 +235,25 @@ describe('API Routes', () => {
 
       const commentData = {
         postId: post._id.toString(),
-        sender: 'Commenter',
         body: 'This is a comment',
       };
 
       const response = await request(app)
         .post('/comment')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(commentData)
         .expect(201);
 
       expect(response.body).toHaveProperty('_id');
       expect(response.body.postId).toBe(post._id.toString());
-      expect(response.body.sender).toBe(commentData.sender);
+      expect(response.body.sender).toBe(testUserId);
       expect(response.body.body).toBe(commentData.body);
     });
 
     test('should return 400 if required fields are missing', async () => {
       const response = await request(app)
         .post('/comment')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send({ body: 'Missing postId and sender' })
         .expect(400);
 
@@ -245,6 +277,7 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .get(`/comment/${comment._id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body._id).toBe(comment._id.toString());
@@ -255,6 +288,7 @@ describe('API Routes', () => {
       const fakeId = '507f1f77bcf86cd799439011';
       const response = await request(app)
         .get(`/comment/${fakeId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(404);
 
       expect(response.body).toHaveProperty('error');
@@ -282,17 +316,19 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .put(`/comment/${comment._id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(updateData)
         .expect(200);
 
       expect(response.body.body).toBe(updateData.body);
-      expect(response.body.sender).toBe(updateData.sender);
+      expect(response.body.sender).toBe('OriginalSender');
     });
 
     test('should return 404 if comment not found', async () => {
       const fakeId = '507f1f77bcf86cd799439011';
       const response = await request(app)
         .put(`/comment/${fakeId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .send({ body: 'Updated', sender: 'Updated' })
         .expect(404);
 
@@ -316,6 +352,7 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .delete(`/comment/${comment._id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body).toHaveProperty('message');
@@ -330,6 +367,7 @@ describe('API Routes', () => {
       const fakeId = '507f1f77bcf86cd799439011';
       const response = await request(app)
         .delete(`/comment/${fakeId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(404);
 
       expect(response.body).toHaveProperty('error');
@@ -367,6 +405,7 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .get(`/post/${post1._id}/comments`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body).toHaveLength(2);
@@ -382,10 +421,10 @@ describe('API Routes', () => {
 
       const response = await request(app)
         .get(`/post/${post._id}/comments`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body).toEqual([]);
     });
   });
 });
-
