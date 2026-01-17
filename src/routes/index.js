@@ -2,6 +2,7 @@ import express from "express";
 import * as postsController from "../controllers/postsController.js";
 import * as commentsController from "../controllers/commentsController.js";
 import * as authController from "../controllers/authController.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -12,6 +13,9 @@ router.post("/auth/register", authController.register);
 router.post("/auth/login", authController.login);
 router.post("/auth/logout", authController.logout);
 router.post("/auth/refresh", authController.refresh);
+
+// Middleware to protect the following routes
+router.use(authMiddleware);
 
 // Post routes
 router.post("/post", postsController.createPost);

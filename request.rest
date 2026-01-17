@@ -100,7 +100,7 @@ POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
 {
-    "refreshToken": "PASTE_REFRESH_TOKEN_HERE"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTZiYTMyMjU4OTcwYzdmYjk0MTMyNjYiLCJpYXQiOjE3Njg2NjIyNjAsImV4cCI6MTc2OTI2NzA2MH0.KyMVzcvpTTsINaWWIXzRoGkv1bCO_1nCbAXOGcmZBRA"
 }
 
 ### Logout
@@ -108,5 +108,5 @@ POST {{baseUrl}}/auth/logout
 Content-Type: application/json
 
 {
-    "refreshToken": "PASTE_REFRESH_TOKEN_HERE"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTZiYTMyMjU4OTcwYzdmYjk0MTMyNjYiLCJpYXQiOjE3Njg2NjIyNzgsImV4cCI6MTc2OTI2NzA3OH0.warlP1m6VnkUuY6XZaY7wvWRrwFYWmrAQsHmGWbzzoU"
 }
