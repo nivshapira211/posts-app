@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:3000
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTZiYTMyMjU4OTcwYzdmYjk0MTMyNjYiLCJpYXQiOjE3Njg2NjQyODksImV4cCI6MTc2ODY2NTE4OX0.fkFLCcpCaPjq57h9J6JCF1augVo29ghIo-QoWREglN0
 
 ### ============================================
 ### GENERAL ENDPOINTS
@@ -13,10 +14,12 @@ GET {{baseUrl}}/
 
 ### List all posts
 GET {{baseUrl}}/posts
+Authorization: Bearer {{accessToken}}
 
 ### Create a new post
 POST {{baseUrl}}/post
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "title": "My third post",
@@ -26,13 +29,16 @@ Content-Type: application/json
 
 ### Get posts by sender (query parameter)
 GET {{baseUrl}}/post?sender=Niv
+Authorization: Bearer {{accessToken}}
 
 ### Get a single post by ID
 GET {{baseUrl}}/post/6960eb69acd0a11fddf3a61e
+Authorization: Bearer {{accessToken}}
 
 ### Update a post
 PUT {{baseUrl}}/post/6960eb69acd0a11fddf3a61e
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "title": "Updated title",
@@ -47,6 +53,7 @@ Content-Type: application/json
 ### Create a new comment
 POST {{baseUrl}}/comment
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "postId": "6960eb69acd0a11fddf3a61e",
@@ -56,13 +63,16 @@ Content-Type: application/json
 
 ### Get all comments for a specific post
 GET {{baseUrl}}/post/6960eb69acd0a11fddf3a61e/comments
+Authorization: Bearer {{accessToken}}
 
 ### Get a single comment by ID
 GET {{baseUrl}}/comment/6960f391acd0a11fddf3a651
+Authorization: Bearer {{accessToken}}
 
 ### Update a comment
 PUT {{baseUrl}}/comment/6960f391acd0a11fddf3a651
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "body": "Updated comment text",
@@ -71,6 +81,7 @@ Content-Type: application/json
 
 ### Delete a comment
 DELETE {{baseUrl}}/comment/6960f391acd0a11fddf3a651
+Authorization: Bearer {{accessToken}}
 
 ### ============================================
 ### AUTH ENDPOINTS
@@ -117,13 +128,16 @@ Content-Type: application/json
 
 ### Get all users
 GET {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
 
 ### Get user by ID
-GET {{baseUrl}}/users/REPLACE_WITH_USER_ID
+GET {{baseUrl}}/users/696ba32258970c7fb9413266
+Authorization: Bearer {{accessToken}}
 
 ### Create User (Admin style)
 POST {{baseUrl}}/users
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
     "username": "NewAdminUser",
@@ -134,6 +148,7 @@ Content-Type: application/json
 ### Update user
 PUT {{baseUrl}}/users/REPLACE_WITH_USER_ID
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
     "username": "UpdatedUsername"
@@ -141,3 +156,4 @@ Content-Type: application/json
 
 ### Delete user
 DELETE {{baseUrl}}/users/REPLACE_WITH_USER_ID
+Authorization: Bearer {{accessToken}}
