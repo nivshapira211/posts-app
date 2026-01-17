@@ -71,3 +71,42 @@ Content-Type: application/json
 
 ### Delete a comment
 DELETE {{baseUrl}}/comment/6960f391acd0a11fddf3a651
+
+### ============================================
+### AUTH ENDPOINTS
+### ============================================
+
+### Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "TestUser",
+    "email": "test@user.com",
+    "password": "password123"
+}
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@user.com",
+    "password": "password123"
+}
+
+### Refresh Token
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+    "refreshToken": "PASTE_REFRESH_TOKEN_HERE"
+}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+
+{
+    "refreshToken": "PASTE_REFRESH_TOKEN_HERE"
+}
