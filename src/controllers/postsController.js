@@ -2,7 +2,8 @@ import Post from "../models/post.js";
 
 export async function createPost(req, res) {
   try {
-    const { title, body, sender } = req.body;
+    const { title, body } = req.body;
+    const sender = req.user._id;
     const post = await Post.create({ title, body, sender });
     res.status(201).json(post);
   } catch (err) {
@@ -47,12 +48,12 @@ export async function getPostsBySender(req, res) {
 export async function updatePost(req, res) {
   try {
     const { id } = req.params;
-    const { title, body, sender } = req.body;
+    const { title, body } = req.body;
     
     // Find the post and update it, replacing all fields
     const post = await Post.findByIdAndUpdate(
       id,
-      { title, body, sender },
+      { title, body },
       { new: true, runValidators: true }
     );
     
@@ -65,4 +66,3 @@ export async function updatePost(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
-

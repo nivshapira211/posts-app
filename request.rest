@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTZiYTMyMjU4OTcwYzdmYjk0MTMyNjYiLCJpYXQiOjE3Njg2NjQyODksImV4cCI6MTc2ODY2NTE4OX0.fkFLCcpCaPjq57h9J6JCF1augVo29ghIo-QoWREglN0
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTZiYTMyMjU4OTcwYzdmYjk0MTMyNjYiLCJpYXQiOjE3Njg2NjUyNTksImV4cCI6MTc2ODY2NjE1OX0.0fb6lnkyjSweN2oCL6Z4qPAV2CSPZGCEaTXkBkaZs1A
 
 ### ============================================
 ### GENERAL ENDPOINTS
@@ -22,17 +22,16 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "title": "My third post",
+  "title": "My fifth post",
   "body": "Hello from REST client"
 }
 
 ### Get posts by sender (query parameter)
-GET {{baseUrl}}/post?sender=Niv
-GET {{baseUrl}}/post?sender=REPLACE_WITH_USER_ID
+GET {{baseUrl}}/post?sender=696ba32258970c7fb9413266
 Authorization: Bearer {{accessToken}}
 
 ### Get a single post by ID
-GET {{baseUrl}}/post/6960eb69acd0a11fddf3a61e
+GET {{baseUrl}}/post/696bb0d3d8d40d941fe4e0ce
 Authorization: Bearer {{accessToken}}
 
 ### Update a post
