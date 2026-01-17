@@ -23,12 +23,12 @@ Authorization: Bearer {{accessToken}}
 
 {
   "title": "My third post",
-  "body": "Hello from REST client",
-  "sender": "Ofek"
+  "body": "Hello from REST client"
 }
 
 ### Get posts by sender (query parameter)
 GET {{baseUrl}}/post?sender=Niv
+GET {{baseUrl}}/post?sender=REPLACE_WITH_USER_ID
 Authorization: Bearer {{accessToken}}
 
 ### Get a single post by ID
@@ -42,8 +42,7 @@ Authorization: Bearer {{accessToken}}
 
 {
   "title": "Updated title",
-  "body": "Updated body content",
-  "sender": "Niv"
+  "body": "Updated body content"
 }
 
 ### ============================================
@@ -75,8 +74,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "body": "Updated comment text",
-  "sender": "Alice"
+  "body": "Updated comment text"
 }
 
 ### Delete a comment
