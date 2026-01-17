@@ -26,18 +26,351 @@ router.put("/users/:id", usersController.updateUser);
 router.delete("/users/:id", usersController.deleteUser);
 
 // Post routes
+
+/**
+ * @swagger
+ * /post:
+ *   post:
+ *     summary: Create a new post
+ *     tags: [Posts]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreatePostRequest'
+ *     responses:
+ *       201:
+ *         description: Post created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post("/post", postsController.createPost);
+
+/**
+ * @swagger
+ * /posts:
+ *   get:
+ *     summary: List all posts
+ *     tags: [Posts]
+ *     responses:
+ *       200:
+ *         description: List of all posts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/posts", postsController.listPosts);
+
 // Specific route must come before parameterized route
+
+/**
+ * @swagger
+ * /post:
+ *   get:
+ *     summary: Get posts by sender
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: query
+ *         name: sender
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Name of the sender
+ *         example: Niv
+ *     responses:
+ *       200:
+ *         description: List of posts by the specified sender
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Bad request - sender parameter is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/post", postsController.getPostsBySender);
+
+/**
+ * @swagger
+ * /post/{id}:
+ *   get:
+ *     summary: Get a single post by ID
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Post ID
+ *         example: 6960eb69acd0a11fddf3a61e
+ *     responses:
+ *       200:
+ *         description: Post details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/post/:id", postsController.getPost);
+
+/**
+ * @swagger
+ * /post/{id}:
+ *   put:
+ *     summary: Update a post
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Post ID
+ *         example: 6960eb69acd0a11fddf3a61e
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdatePostRequest'
+ *     responses:
+ *       200:
+ *         description: Post updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.put("/post/:id", postsController.updatePost);
 
 // Comment routes
+
+/**
+ * @swagger
+ * /comment:
+ *   post:
+ *     summary: Create a new comment
+ *     tags: [Comments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateCommentRequest'
+ *     responses:
+ *       201:
+ *         description: Comment created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Bad request - postId, sender, and body are required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post("/comment", commentsController.createComment);
+
+/**
+ * @swagger
+ * /comment/{id}:
+ *   get:
+ *     summary: Get a single comment by ID
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Comment ID
+ *         example: 6960f391acd0a11fddf3a651
+ *     responses:
+ *       200:
+ *         description: Comment details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Comment not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/comment/:id", commentsController.getComment);
+
+/**
+ * @swagger
+ * /comment/{id}:
+ *   put:
+ *     summary: Update a comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Comment ID
+ *         example: 6960f391acd0a11fddf3a651
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateCommentRequest'
+ *     responses:
+ *       200:
+ *         description: Comment updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Comment not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.put("/comment/:id", commentsController.updateComment);
+
+/**
+ * @swagger
+ * /comment/{id}:
+ *   delete:
+ *     summary: Delete a comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Comment ID
+ *         example: 6960f391acd0a11fddf3a651
+ *     responses:
+ *       200:
+ *         description: Comment deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DeleteCommentResponse'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Comment not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.delete("/comment/:id", commentsController.deleteComment);
+
+/**
+ * @swagger
+ * /post/{postId}/comments:
+ *   get:
+ *     summary: Get all comments for a specific post
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Post ID
+ *         example: 6960eb69acd0a11fddf3a61e
+ *     responses:
+ *       200:
+ *         description: List of comments for the post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/post/:postId/comments", commentsController.getCommentsByPost);
 
 
