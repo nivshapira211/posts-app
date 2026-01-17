@@ -2,16 +2,26 @@ import express from "express";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
 import routes from "./routes/index.js";
+import { connect } from "./db.js";
 
-export function createApp() {
-  const app = express();
+export function createApp(mongodbUri) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Wait for MongoDB connection before creating the app
+      await connect(mongodbUri);
+      
+      const app = express();
 
-  app.use(express.json());
-  
-  // Swagger documentation
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  
-  app.use(routes);
+      app.use(express.json());
+      
+      // Swagger documentation
+      app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+      
+      app.use(routes);
 
-  return app;
+      resolve(app);
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
