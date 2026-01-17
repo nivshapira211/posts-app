@@ -12,12 +12,12 @@ export const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
         if (!username || !email || !password) {
-            return res.status(400).send("Username, email, and password are required");
+            return res.status(400).send({ error: "Username, email, and password are required" });
         }
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).send("User already exists");
+            return res.status(400).send({ error: "User already exists" });
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -37,7 +37,7 @@ export const register = async (req, res) => {
             email: user.email
         });
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send({ error: err.message });
     }
 };
 
@@ -45,10 +45,10 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-        if (!user) return res.status(400).send("Invalid email or password");
+        if (!user) return res.status(400).send({ error: "Invalid email or password" });
 
         const validPass = await bcrypt.compare(password, user.password);
-        if (!validPass) return res.status(400).send("Invalid email or password");
+        if (!validPass) return res.status(400).send({ error: "Invalid email or password" });
 
         const tokens = generateTokens(user._id);
 
@@ -62,13 +62,13 @@ export const login = async (req, res) => {
             _id: user._id
         });
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send({ error: err.message });
     }
 };
 
 export const logout = async (req, res) => {
     const refreshToken = req.body.refreshToken;
-    if (!refreshToken) return res.status(400).send("Refresh Token Required");
+    if (!refreshToken) return res.status(400).send({ error: "Refresh Token Required" });
 
     try {
         const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
@@ -81,25 +81,25 @@ export const logout = async (req, res) => {
         
         res.send("Logged out successfully");
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send({ error: err.message });
     }
 };
 
 export const refresh = async (req, res) => {
     const refreshToken = req.body.refreshToken;
-    if (!refreshToken) return res.status(401).send("Refresh Token Required");
+    if (!refreshToken) return res.status(401).send({ error: "Refresh Token Required" });
 
     try {
         const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
         const user = await User.findById(payload._id);
 
-        if (!user) return res.status(401).send("User not found");
+        if (!user) return res.status(401).send({ error: "User not found" });
 
         if (!user.refreshTokens || !user.refreshTokens.includes(refreshToken)) {
             // Token reuse detected or invalid token - clear all tokens for security
             user.refreshTokens = [];
             await user.save();
-            return res.status(403).send("Invalid Refresh Token");
+            return res.status(403).send({ error: "Invalid Refresh Token" });
         }
 
         const tokens = generateTokens(user._id);
@@ -111,6 +111,6 @@ export const refresh = async (req, res) => {
 
         res.send(tokens);
     } catch (err) {
-        return res.status(403).send("Invalid Refresh Token");
+        return res.status(403).send({ error: "Invalid Refresh Token" });
     }
 };
