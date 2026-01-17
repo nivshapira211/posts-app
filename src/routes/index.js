@@ -1,8 +1,29 @@
 import express from "express";
 import * as postsController from "../controllers/postsController.js";
 import * as commentsController from "../controllers/commentsController.js";
+import * as authController from "../controllers/authController.js";
+import * as usersController from "../controllers/usersController.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
+
+router.get("/", (req, res) => res.send("Hello, This is Niv&Ofek posts app!"));
+
+// Auth routes
+router.post("/auth/register", authController.register);
+router.post("/auth/login", authController.login);
+router.post("/auth/logout", authController.logout);
+router.post("/auth/refresh", authController.refresh);
+
+// Middleware to protect the following routes
+router.use(authMiddleware);
+
+// User routes
+router.get("/users", usersController.getAllUsers);
+router.get("/users/:id", usersController.getUserById);
+router.post("/users", usersController.createUser);
+router.put("/users/:id", usersController.updateUser);
+router.delete("/users/:id", usersController.deleteUser);
 
 // Post routes
 

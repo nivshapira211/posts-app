@@ -3,11 +3,12 @@ import Comment from "../models/comment.js";
 // Create a new comment
 export async function createComment(req, res) {
   try {
-    const { postId, sender, body } = req.body;
+    const { postId, body } = req.body;
+    const sender = req.user._id;
     
-    if (!postId || !sender || !body) {
+    if (!postId || !body) {
       return res.status(400).json({ 
-        error: "postId, sender, and body are required" 
+        error: "postId and body are required" 
       });
     }
     
@@ -52,11 +53,11 @@ export async function getComment(req, res) {
 export async function updateComment(req, res) {
   try {
     const { id } = req.params;
-    const { body, sender } = req.body;
+    const { body } = req.body;
     
     const comment = await Comment.findByIdAndUpdate(
       id,
-      { body, sender },
+      { body },
       { new: true, runValidators: true }
     );
     
@@ -85,4 +86,3 @@ export async function deleteComment(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
-

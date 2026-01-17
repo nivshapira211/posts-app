@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:3000
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTZiYTMyMjU4OTcwYzdmYjk0MTMyNjYiLCJpYXQiOjE3Njg2NjUyNTksImV4cCI6MTc2ODY2NjE1OX0.0fb6lnkyjSweN2oCL6Z4qPAV2CSPZGCEaTXkBkaZs1A
 
 ### ============================================
 ### GENERAL ENDPOINTS
@@ -13,31 +14,34 @@ GET {{baseUrl}}/
 
 ### List all posts
 GET {{baseUrl}}/posts
+Authorization: Bearer {{accessToken}}
 
 ### Create a new post
 POST {{baseUrl}}/post
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
-  "title": "My third post",
-  "body": "Hello from REST client",
-  "sender": "Ofek"
+  "title": "My fifth post",
+  "body": "Hello from REST client"
 }
 
 ### Get posts by sender (query parameter)
-GET {{baseUrl}}/post?sender=Niv
+GET {{baseUrl}}/post?sender=696ba32258970c7fb9413266
+Authorization: Bearer {{accessToken}}
 
 ### Get a single post by ID
-GET {{baseUrl}}/post/6960eb69acd0a11fddf3a61e
+GET {{baseUrl}}/post/696bb0d3d8d40d941fe4e0ce
+Authorization: Bearer {{accessToken}}
 
 ### Update a post
 PUT {{baseUrl}}/post/6960eb69acd0a11fddf3a61e
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "title": "Updated title",
-  "body": "Updated body content",
-  "sender": "Niv"
+  "body": "Updated body content"
 }
 
 ### ============================================
@@ -47,6 +51,7 @@ Content-Type: application/json
 ### Create a new comment
 POST {{baseUrl}}/comment
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "postId": "6960eb69acd0a11fddf3a61e",
@@ -56,18 +61,96 @@ Content-Type: application/json
 
 ### Get all comments for a specific post
 GET {{baseUrl}}/post/6960eb69acd0a11fddf3a61e/comments
+Authorization: Bearer {{accessToken}}
 
 ### Get a single comment by ID
 GET {{baseUrl}}/comment/6960f391acd0a11fddf3a651
+Authorization: Bearer {{accessToken}}
 
 ### Update a comment
 PUT {{baseUrl}}/comment/6960f391acd0a11fddf3a651
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
-  "body": "Updated comment text",
-  "sender": "Alice"
+  "body": "Updated comment text"
 }
 
 ### Delete a comment
 DELETE {{baseUrl}}/comment/6960f391acd0a11fddf3a651
+Authorization: Bearer {{accessToken}}
+
+### ============================================
+### AUTH ENDPOINTS
+### ============================================
+
+### Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "TestUser",
+    "email": "test@user.com",
+    "password": "password123"
+}
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@user.com",
+    "password": "password123"
+}
+
+### Refresh Token
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTZiYTMyMjU4OTcwYzdmYjk0MTMyNjYiLCJpYXQiOjE3Njg2NjIyNjAsImV4cCI6MTc2OTI2NzA2MH0.KyMVzcvpTTsINaWWIXzRoGkv1bCO_1nCbAXOGcmZBRA"
+}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTZiYTMyMjU4OTcwYzdmYjk0MTMyNjYiLCJpYXQiOjE3Njg2NjIyNzgsImV4cCI6MTc2OTI2NzA3OH0.warlP1m6VnkUuY6XZaY7wvWRrwFYWmrAQsHmGWbzzoU"
+}
+
+### ============================================
+### USER ENDPOINTS
+### ============================================
+
+### Get all users
+GET {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+
+### Get user by ID
+GET {{baseUrl}}/users/696ba32258970c7fb9413266
+Authorization: Bearer {{accessToken}}
+
+### Create User (Admin style)
+POST {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "username": "NewAdminUser",
+    "email": "admin@test.com",
+    "password": "securepassword"
+}
+
+### Update user
+PUT {{baseUrl}}/users/REPLACE_WITH_USER_ID
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "username": "UpdatedUsername"
+}
+
+### Delete user
+DELETE {{baseUrl}}/users/REPLACE_WITH_USER_ID
+Authorization: Bearer {{accessToken}}
