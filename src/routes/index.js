@@ -7,8 +7,6 @@ import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/", (req, res) => res.send("Hello, This is Niv&Ofek posts app!"));
-
 // Auth routes
 
 /**
