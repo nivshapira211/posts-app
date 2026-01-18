@@ -3,7 +3,7 @@ import { connect, disconnect } from '../src/db.js';
 import { createApp } from '../src/app.js';
 
 describe('MongoDB Connection', () => {
-  const TEST_MONGODB_URI = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/posts-app-test';
+  const TEST_MONGODB_URI: string = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/posts-app-test';
 
   afterEach(async () => {
     // Clean up: disconnect after each test

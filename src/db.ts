@@ -1,13 +1,12 @@
 import mongoose from "mongoose";
 
-export function connect(connectionString) {
+export function connect(connectionString: string): Promise<typeof mongoose> {
     return mongoose.connect(connectionString, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
         serverSelectionTimeoutMS: 5000, // Fail fast for tests (5 seconds)
     });
 }
 
-export function disconnect() {
+export function disconnect(): Promise<void> {
     return mongoose.disconnect();
 }
+

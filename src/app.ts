@@ -1,10 +1,10 @@
-import express from "express";
+import express, { Express } from "express";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
 import routes from "./routes/index.js";
 import { connect } from "./db.js";
 
-export function createApp(mongodbUri) {
+export function createApp(mongodbUri: string): Promise<Express> {
   return new Promise(async (resolve, reject) => {
     try {
       // Wait for MongoDB connection before creating the app
@@ -25,3 +25,4 @@ export function createApp(mongodbUri) {
     }
   });
 }
+

@@ -1,14 +1,22 @@
 export default {
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
-  transform: {},
+  extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  testMatch: ['**/tests/**/*.test.js'],
+  transform: {
+    '^.+\\.ts$': ['ts-jest', {
+      useESM: true,
+      tsconfig: {
+        module: 'ES2020',
+      },
+    }],
+  },
+  testMatch: ['**/tests/**/*.test.ts'],
   collectCoverageFrom: [
-    'src/**/*.js',
-    '!src/server.js',
+    'src/**/*.ts',
+    '!src/server.ts',
     '!src/config/**',
   ],
 };
-
