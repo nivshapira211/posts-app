@@ -131,17 +131,6 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/users/696ba32258970c7fb9413266
 Authorization: Bearer {{accessToken}}
 
-### Create User (Admin style)
-POST {{baseUrl}}/users
-Content-Type: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "username": "NewAdminUser",
-    "email": "admin@test.com",
-    "password": "securepassword"
-}
-
 ### Update user
 PUT {{baseUrl}}/users/REPLACE_WITH_USER_ID
 Content-Type: application/json
