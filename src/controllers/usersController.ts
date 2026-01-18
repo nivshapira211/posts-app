@@ -1,16 +1,20 @@
+import { Request, Response } from "express";
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
+import { AuthRequest } from "../middleware/auth.js";
 
-export const createUser = async (req, res) => {
+export const createUser = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { username, email, password } = req.body;
         if (!username || !email || !password) {
-            return res.status(400).json({ error: "Username, email, and password are required" });
+            res.status(400).json({ error: "Username, email, and password are required" });
+            return;
         }
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ error: "User already exists" });
+            res.status(400).json({ error: "User already exists" });
+            return;
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -26,35 +30,38 @@ export const createUser = async (req, res) => {
 
         // Return user without password
         const userResponse = user.toObject();
-        delete userResponse.password;
-        delete userResponse.refreshTokens;
+        delete (userResponse as any).password;
+        delete (userResponse as any).refreshTokens;
 
         res.status(201).json(userResponse);
-    } catch (err) {
+    } catch (err: any) {
         res.status(400).json({ error: err.message });
     }
 };
 
-export const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const users = await User.find().select("-password -refreshTokens");
         res.json(users);
-    } catch (err) {
+    } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
 };
 
-export const getUserById = async (req, res) => {
+export const getUserById = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const user = await User.findById(req.params.id).select("-password -refreshTokens");
-        if (!user) return res.status(404).json({ error: "User not found" });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
         res.json(user);
-    } catch (err) {
+    } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
 };
 
-export const updateUser = async (req, res) => {
+export const updateUser = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         if (req.body.password) {
             const salt = await bcrypt.genSalt(10);
@@ -63,19 +70,26 @@ export const updateUser = async (req, res) => {
             req.body.refreshTokens = [];
         }
         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true }).select("-password -refreshTokens");
-        if (!user) return res.status(404).json({ error: "User not found" });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
         res.json(user);
-    } catch (err) {
+    } catch (err: any) {
         res.status(400).json({ error: err.message });
     }
 };
 
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
-        if (!user) return res.status(404).json({ error: "User not found" });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
         res.json({ message: "User deleted successfully" });
-    } catch (err) {
+    } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
 };
+

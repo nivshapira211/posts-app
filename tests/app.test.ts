@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { Express } from 'express';
 import { createApp } from '../src/app.js';
 import Post from '../src/models/post.js';
 import Comment from '../src/models/comment.js';
@@ -6,8 +7,8 @@ import User from '../src/models/user.js';
 import { disconnect } from '../src/db.js';
 
 describe('API Routes', () => {
-  let app;
-  const TEST_MONGODB_URI = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/posts-app-test';
+  let app: Express;
+  const TEST_MONGODB_URI: string = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/posts-app-test';
 
   beforeAll(async () => {
     // Set environment variables for testing
@@ -26,8 +27,8 @@ describe('API Routes', () => {
     await disconnect();
   });
 
-  let accessToken;
-  let testUserId;
+  let accessToken: string;
+  let testUserId: string;
 
   beforeEach(async () => {
     // Clean up before each test
@@ -137,7 +138,7 @@ describe('API Routes', () => {
         .expect(200);
 
       expect(response.body).toHaveLength(2);
-      expect(response.body.every(post => post.sender === 'User1')).toBe(true);
+      expect(response.body.every((post: any) => post.sender === 'User1')).toBe(true);
     });
 
     test('should return 400 if sender parameter is missing', async () => {
@@ -409,7 +410,7 @@ describe('API Routes', () => {
         .expect(200);
 
       expect(response.body).toHaveLength(2);
-      expect(response.body.every(comment => comment.postId === post1._id.toString())).toBe(true);
+      expect(response.body.every((comment: any) => comment.postId === post1._id.toString())).toBe(true);
     });
 
     test('should return empty array if post has no comments', async () => {
@@ -548,7 +549,7 @@ describe('API Routes', () => {
   });
 
   describe('POST /auth/logout', () => {
-    let refreshToken;
+    let refreshToken: string;
 
     beforeEach(async () => {
       // Get refresh token from login
@@ -585,7 +586,7 @@ describe('API Routes', () => {
   });
 
   describe('POST /auth/refresh', () => {
-    let refreshToken;
+    let refreshToken: string;
 
     beforeEach(async () => {
       // Get refresh token from login
@@ -655,7 +656,7 @@ describe('API Routes', () => {
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBeGreaterThanOrEqual(2);
       // Verify passwords are not included
-      response.body.forEach(user => {
+      response.body.forEach((user: any) => {
         expect(user).not.toHaveProperty('password');
         expect(user).not.toHaveProperty('refreshTokens');
       });
@@ -671,7 +672,7 @@ describe('API Routes', () => {
   });
 
   describe('GET /users/:id', () => {
-    let userId;
+    let userId: any;
 
     beforeEach(async () => {
       const user = await User.create({
@@ -783,7 +784,7 @@ describe('API Routes', () => {
   });
 
   describe('PUT /users/:id', () => {
-    let userId;
+    let userId: any;
 
     beforeEach(async () => {
       const user = await User.create({
@@ -825,7 +826,10 @@ describe('API Routes', () => {
       expect(response.body).not.toHaveProperty('password');
       // Verify password was changed by checking refreshTokens were cleared
       const updatedUser = await User.findById(userId);
-      expect(updatedUser.refreshTokens).toEqual([]);
+      expect(updatedUser).not.toBeNull();
+      if (updatedUser) {
+        expect(updatedUser.refreshTokens).toEqual([]);
+      }
     });
 
     test('should return 404 if user not found', async () => {
@@ -850,7 +854,7 @@ describe('API Routes', () => {
   });
 
   describe('DELETE /users/:id', () => {
-    let userId;
+    let userId: any;
 
     beforeEach(async () => {
       const user = await User.create({

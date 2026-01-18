@@ -4,10 +4,10 @@ dotenv.config();
 import { createApp } from "./app.js";
 import { disconnect } from "./db.js";
 
-const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/posts-app";
+const PORT: number = parseInt(process.env.PORT || "3000", 10);
+const MONGODB_URI: string = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/posts-app";
 
-async function start() {
+async function start(): Promise<void> {
   try {
     const app = await createApp(MONGODB_URI);
     const server = app.listen(PORT, () => {
@@ -26,3 +26,4 @@ async function start() {
 }
 
 start();
+

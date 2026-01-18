@@ -1,11 +1,11 @@
-import express from "express";
+import express, { Router } from "express";
 import * as postsController from "../controllers/postsController.js";
 import * as commentsController from "../controllers/commentsController.js";
 import * as authController from "../controllers/authController.js";
 import * as usersController from "../controllers/usersController.js";
 import { authMiddleware } from "../middleware/auth.js";
 
-const router = express.Router();
+const router: Router = express.Router();
 
 // Auth routes
 
@@ -679,3 +679,4 @@ router.get("/post/:postId/comments", commentsController.getCommentsByPost);
 
 
 export default router;
+
