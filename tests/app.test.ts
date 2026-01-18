@@ -77,6 +77,20 @@ describe('API Routes', () => {
 
       expect(response.body).toHaveProperty('error');
     });
+
+    test('should return 400 on database error', async () => {
+      // Test with invalid data that might cause database validation error
+      const response = await request(app)
+        .post('/post')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: null, // Invalid data
+          body: 'Test body',
+        })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
   });
 
   describe('GET /posts', () => {
@@ -224,6 +238,53 @@ describe('API Routes', () => {
 
       expect(response.body).toHaveProperty('error');
     });
+
+    test('should return 400 with invalid post ID format', async () => {
+      const response = await request(app)
+        .put('/post/invalid-id')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ title: 'Updated', body: 'Updated' })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+  });
+
+  describe('Auth Middleware Edge Cases', () => {
+    test('should return 401 with missing token', async () => {
+      const response = await request(app)
+        .get('/users')
+        .set('Authorization', 'InvalidFormat')
+        .expect(401);
+
+      expect(response.text).toContain('Access Denied');
+    });
+
+    test('should return 403 with invalid token format', async () => {
+      const response = await request(app)
+        .get('/users')
+        .set('Authorization', 'InvalidFormat token')
+        .expect(403);
+
+      expect(response.text).toContain('Invalid Token');
+    });
+
+    test('should return 403 with expired token', async () => {
+      // Create an expired token
+      const jwt = await import('jsonwebtoken');
+      const expiredToken = jwt.default.sign(
+        { _id: testUserId },
+        process.env.JWT_SECRET || 'test_secret',
+        { expiresIn: '-1h' }
+      );
+
+      const response = await request(app)
+        .get('/users')
+        .set('Authorization', `Bearer ${expiredToken}`)
+        .expect(403);
+
+      expect(response.text).toContain('Invalid Token');
+    });
   });
 
   describe('POST /comment', () => {
@@ -260,6 +321,20 @@ describe('API Routes', () => {
 
       expect(response.body).toHaveProperty('error');
     });
+
+    test('should return 400 on database error when creating comment', async () => {
+      // Test with invalid postId that might cause database error
+      const response = await request(app)
+        .post('/comment')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          postId: 'invalid-post-id',
+          body: 'Test comment',
+        })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
   });
 
   describe('GET /comment/:id', () => {
@@ -291,6 +366,15 @@ describe('API Routes', () => {
         .get(`/comment/${fakeId}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(404);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 400 with invalid comment ID format', async () => {
+      const response = await request(app)
+        .get('/comment/invalid-id')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -335,6 +419,16 @@ describe('API Routes', () => {
 
       expect(response.body).toHaveProperty('error');
     });
+
+    test('should return 400 with invalid comment ID format for update', async () => {
+      const response = await request(app)
+        .put('/comment/invalid-id')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ body: 'Updated' })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
   });
 
   describe('DELETE /comment/:id', () => {
@@ -370,6 +464,15 @@ describe('API Routes', () => {
         .delete(`/comment/${fakeId}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(404);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 400 with invalid comment ID format for delete', async () => {
+      const response = await request(app)
+        .delete('/comment/invalid-id')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -427,6 +530,17 @@ describe('API Routes', () => {
 
       expect(response.body).toEqual([]);
     });
+
+    test('should return 500 on database error when getting comments', async () => {
+      // Test error handling in getCommentsByPost
+      // Using an invalid postId format might trigger error handling
+      const response = await request(app)
+        .get('/post/invalid-post-id/comments')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(500); // Should handle the error
+
+      expect(response.body).toHaveProperty('error');
+    });
   });
 
   // Auth routes tests
@@ -480,6 +594,7 @@ describe('API Routes', () => {
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toContain('already exists');
     });
+
   });
 
   describe('POST /auth/login', () => {
@@ -546,6 +661,27 @@ describe('API Routes', () => {
 
       expect(response.body).toHaveProperty('error');
     });
+
+    test('should handle login when user has no refreshTokens array', async () => {
+      // Create user directly without refreshTokens
+      const user = await User.create({
+        username: 'LoginUser3',
+        email: 'login3@example.com',
+        password: await import('bcrypt').then(bcrypt => bcrypt.default.hash('password123', 10)),
+      });
+
+      // Login should work and create refreshTokens array
+      const response = await request(app)
+        .post('/auth/login')
+        .send({
+          email: 'login3@example.com',
+          password: 'password123',
+        })
+        .expect(200);
+
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('refreshToken');
+    });
   });
 
   describe('POST /auth/logout', () => {
@@ -582,6 +718,44 @@ describe('API Routes', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+    });
+
+    test('should handle logout with invalid refresh token', async () => {
+      const response = await request(app)
+        .post('/auth/logout')
+        .send({ refreshToken: 'invalid_token' })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should handle logout when user not found', async () => {
+      // Create a token for a user that will be deleted
+      const userData = {
+        username: 'LogoutUser2',
+        email: 'logout2@example.com',
+        password: 'password123',
+      };
+      await request(app).post('/auth/register').send(userData);
+      const loginRes = await request(app).post('/auth/login').send({
+        email: userData.email,
+        password: userData.password,
+      });
+      const refreshToken = loginRes.body.refreshToken;
+
+      // Delete the user
+      const user = await User.findOne({ email: userData.email });
+      if (user) {
+        await User.findByIdAndDelete(user._id);
+      }
+
+      // Try to logout with token from deleted user (should still work, just no-op)
+      const response = await request(app)
+        .post('/auth/logout')
+        .send({ refreshToken })
+        .expect(200);
+
+      expect(response.text).toContain('Logged out successfully');
     });
   });
 
@@ -630,6 +804,81 @@ describe('API Routes', () => {
         .expect(403);
 
       expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 403 when refresh token is not in user tokens (token reuse)', async () => {
+      // Get a valid refresh token
+      const userData = {
+        username: 'RefreshUser2',
+        email: 'refresh2@example.com',
+        password: 'password123',
+      };
+      await request(app).post('/auth/register').send(userData);
+      const loginRes = await request(app).post('/auth/login').send({
+        email: userData.email,
+        password: userData.password,
+      });
+      const validRefreshToken = loginRes.body.refreshToken;
+
+      // Verify the token is in the user's refreshTokens array
+      const user = await User.findOne({ email: userData.email });
+      expect(user).not.toBeNull();
+      expect(user?.refreshTokens).toContain(validRefreshToken);
+
+      // Use the token once (refresh it) - this should remove it from the array
+      const refreshRes = await request(app)
+        .post('/auth/refresh')
+        .send({ refreshToken: validRefreshToken })
+        .expect(200);
+
+      // Verify the old token is removed and a new one is added
+      // Wait a bit to ensure database is synced
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const updatedUser = await User.findOne({ email: userData.email });
+      expect(updatedUser).not.toBeNull();
+      expect(updatedUser?.refreshTokens).not.toContain(validRefreshToken);
+      expect(updatedUser?.refreshTokens).toContain(refreshRes.body.refreshToken);
+      expect(updatedUser?.refreshTokens.length).toBe(1); // Should only have the new token
+
+      // Try to use the same old token again (should fail - token reuse)
+      // The token is still a valid JWT, but it's not in the user's refreshTokens array
+      const response = await request(app)
+        .post('/auth/refresh')
+        .send({ refreshToken: validRefreshToken })
+        .expect(403);
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('Invalid Refresh Token');
+    });
+
+    test('should return 401 when user not found during refresh', async () => {
+      // Create a token for a user that will be deleted
+      const userData = {
+        username: 'RefreshUser3',
+        email: 'refresh3@example.com',
+        password: 'password123',
+      };
+      await request(app).post('/auth/register').send(userData);
+      const loginRes = await request(app).post('/auth/login').send({
+        email: userData.email,
+        password: userData.password,
+      });
+      const refreshToken = loginRes.body.refreshToken;
+
+      // Delete the user
+      const user = await User.findOne({ email: userData.email });
+      if (user) {
+        await User.findByIdAndDelete(user._id);
+      }
+
+      // Try to refresh with token from deleted user
+      const response = await request(app)
+        .post('/auth/refresh')
+        .send({ refreshToken })
+        .expect(401);
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('User not found');
     });
   });
 
@@ -705,6 +954,15 @@ describe('API Routes', () => {
       expect(response.body).toHaveProperty('error');
     });
 
+    test('should return 500 with invalid user ID format', async () => {
+      const response = await request(app)
+        .get('/users/invalid-id')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(500);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
     test('should return 401 without authentication', async () => {
       const response = await request(app)
         .get(`/users/${userId}`)
@@ -775,6 +1033,16 @@ describe('API Routes', () => {
       expect(response.body).toHaveProperty('error');
     });
 
+    test('should return 400 with invalid user ID format for update', async () => {
+      const response = await request(app)
+        .put('/users/invalid-id')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ username: 'Updated' })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
     test('should return 401 without authentication', async () => {
       const response = await request(app)
         .put(`/users/${userId}`)
@@ -817,6 +1085,15 @@ describe('API Routes', () => {
         .delete(`/users/${fakeId}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(404);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 500 with invalid user ID format for delete', async () => {
+      const response = await request(app)
+        .delete('/users/invalid-id')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(500);
 
       expect(response.body).toHaveProperty('error');
     });

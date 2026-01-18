@@ -10,7 +10,9 @@ interface TokenPayload {
 const generateTokens = (userId: string): { accessToken: string; refreshToken: string } => {
     const jwtSecret = process.env.JWT_SECRET || "";
     const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || "";
-    const payload = { _id: userId };
+    // Add jti (JWT ID) and timestamp to ensure uniqueness
+    const jti = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    const payload = { _id: userId, jti };
     const accessToken = jwt.sign(payload, jwtSecret, { expiresIn: process.env.JWT_EXPIRATION || "15m" } as SignOptions);
     const refreshToken = jwt.sign(payload, jwtRefreshSecret, { expiresIn: process.env.JWT_REFRESH_EXPIRATION || "7d" } as SignOptions);
     return { accessToken, refreshToken };
@@ -122,7 +124,15 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        if (!user.refreshTokens || !user.refreshTokens.includes(refreshToken)) {
+        // Ensure refreshTokens array exists and is properly loaded
+        if (!user.refreshTokens || !Array.isArray(user.refreshTokens)) {
+            user.refreshTokens = [];
+        }
+
+        // Check if token exists in array
+        const tokenIndex = user.refreshTokens.indexOf(refreshToken);
+
+        if (tokenIndex === -1) {
             // Token reuse detected or invalid token - clear all tokens for security
             user.refreshTokens = [];
             await user.save();
@@ -133,9 +143,17 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
         const tokens = generateTokens(user._id.toString());
 
         // Rotate refresh token: remove old, add new
-        user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
-        user.refreshTokens.push(tokens.refreshToken);
-        await user.save();
+        // MongoDB doesn't allow $pull and $push on the same field in one operation
+        // So we do them sequentially
+        await User.updateOne(
+            { _id: payload._id },
+            { $pull: { refreshTokens: refreshToken } }
+        );
+        
+        await User.updateOne(
+            { _id: payload._id },
+            { $push: { refreshTokens: tokens.refreshToken } }
+        );
 
         res.send(tokens);
     } catch (err: any) {
