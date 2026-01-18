@@ -180,9 +180,200 @@ const options = {
             },
           },
         },
+        User: {
+          type: 'object',
+          required: ['username', 'email'],
+          properties: {
+            _id: {
+              type: 'string',
+              description: 'Unique identifier for the user',
+              example: '507f1f77bcf86cd799439011',
+            },
+            username: {
+              type: 'string',
+              description: 'Username',
+              example: 'johndoe',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'User email address',
+              example: 'john@example.com',
+            },
+          },
+        },
+        RegisterRequest: {
+          type: 'object',
+          required: ['username', 'email', 'password'],
+          properties: {
+            username: {
+              type: 'string',
+              description: 'Username',
+              example: 'johndoe',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'User email address',
+              example: 'john@example.com',
+            },
+            password: {
+              type: 'string',
+              format: 'password',
+              description: 'User password',
+              example: 'securePassword123',
+            },
+          },
+        },
+        LoginRequest: {
+          type: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'User email address',
+              example: 'john@example.com',
+            },
+            password: {
+              type: 'string',
+              format: 'password',
+              description: 'User password',
+              example: 'securePassword123',
+            },
+          },
+        },
+        LoginResponse: {
+          type: 'object',
+          properties: {
+            accessToken: {
+              type: 'string',
+              description: 'JWT access token',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+            refreshToken: {
+              type: 'string',
+              description: 'JWT refresh token',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+            _id: {
+              type: 'string',
+              description: 'User ID',
+              example: '507f1f77bcf86cd799439011',
+            },
+          },
+        },
+        RefreshRequest: {
+          type: 'object',
+          required: ['refreshToken'],
+          properties: {
+            refreshToken: {
+              type: 'string',
+              description: 'JWT refresh token',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+          },
+        },
+        RefreshResponse: {
+          type: 'object',
+          properties: {
+            accessToken: {
+              type: 'string',
+              description: 'New JWT access token',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+            refreshToken: {
+              type: 'string',
+              description: 'New JWT refresh token',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+          },
+        },
+        LogoutRequest: {
+          type: 'object',
+          required: ['refreshToken'],
+          properties: {
+            refreshToken: {
+              type: 'string',
+              description: 'JWT refresh token to invalidate',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+          },
+        },
+        CreateUserRequest: {
+          type: 'object',
+          required: ['username', 'email', 'password'],
+          properties: {
+            username: {
+              type: 'string',
+              description: 'Username',
+              example: 'johndoe',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'User email address',
+              example: 'john@example.com',
+            },
+            password: {
+              type: 'string',
+              format: 'password',
+              description: 'User password',
+              example: 'securePassword123',
+            },
+          },
+        },
+        UpdateUserRequest: {
+          type: 'object',
+          properties: {
+            username: {
+              type: 'string',
+              description: 'Username',
+              example: 'johndoe',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'User email address',
+              example: 'john@example.com',
+            },
+            password: {
+              type: 'string',
+              format: 'password',
+              description: 'User password (will be hashed)',
+              example: 'newSecurePassword123',
+            },
+          },
+        },
+        DeleteUserResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+              description: 'Success message',
+              example: 'User deleted successfully',
+            },
+          },
+        },
+      },
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter JWT token obtained from login endpoint',
+        },
       },
     },
     tags: [
+      {
+        name: 'Auth',
+        description: 'Authentication endpoints',
+      },
+      {
+        name: 'Users',
+        description: 'User management endpoints (requires authentication)',
+      },
       {
         name: 'Posts',
         description: 'Post management endpoints',
