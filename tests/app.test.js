@@ -427,4 +427,470 @@ describe('API Routes', () => {
       expect(response.body).toEqual([]);
     });
   });
+
+  // Auth routes tests
+  describe('POST /auth/register', () => {
+    test('should register a new user', async () => {
+      const userData = {
+        username: 'NewUser',
+        email: 'newuser@example.com',
+        password: 'password123',
+      };
+
+      const response = await request(app)
+        .post('/auth/register')
+        .send(userData)
+        .expect(201);
+
+      expect(response.body).toHaveProperty('_id');
+      expect(response.body.username).toBe(userData.username);
+      expect(response.body.email).toBe(userData.email);
+      expect(response.body).not.toHaveProperty('password');
+    });
+
+    test('should return 400 if required fields are missing', async () => {
+      const response = await request(app)
+        .post('/auth/register')
+        .send({ username: 'TestUser' })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 400 if user already exists', async () => {
+      const userData = {
+        username: 'ExistingUser',
+        email: 'existing@example.com',
+        password: 'password123',
+      };
+
+      // Register first time
+      await request(app)
+        .post('/auth/register')
+        .send(userData)
+        .expect(201);
+
+      // Try to register again with same email
+      const response = await request(app)
+        .post('/auth/register')
+        .send(userData)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('already exists');
+    });
+  });
+
+  describe('POST /auth/login', () => {
+    test('should login with valid credentials', async () => {
+      const userData = {
+        username: 'LoginUser',
+        email: 'login@example.com',
+        password: 'password123',
+      };
+
+      // Register user first
+      await request(app)
+        .post('/auth/register')
+        .send(userData)
+        .expect(201);
+
+      // Login
+      const response = await request(app)
+        .post('/auth/login')
+        .send({
+          email: userData.email,
+          password: userData.password,
+        })
+        .expect(200);
+
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('refreshToken');
+      expect(response.body).toHaveProperty('_id');
+    });
+
+    test('should return 400 with invalid email', async () => {
+      const response = await request(app)
+        .post('/auth/login')
+        .send({
+          email: 'nonexistent@example.com',
+          password: 'password123',
+        })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 400 with invalid password', async () => {
+      const userData = {
+        username: 'LoginUser2',
+        email: 'login2@example.com',
+        password: 'password123',
+      };
+
+      // Register user first
+      await request(app)
+        .post('/auth/register')
+        .send(userData)
+        .expect(201);
+
+      // Try to login with wrong password
+      const response = await request(app)
+        .post('/auth/login')
+        .send({
+          email: userData.email,
+          password: 'wrongpassword',
+        })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+  });
+
+  describe('POST /auth/logout', () => {
+    let refreshToken;
+
+    beforeEach(async () => {
+      // Get refresh token from login
+      const userData = {
+        username: 'LogoutUser',
+        email: 'logout@example.com',
+        password: 'password123',
+      };
+      await request(app).post('/auth/register').send(userData);
+      const loginRes = await request(app).post('/auth/login').send({
+        email: userData.email,
+        password: userData.password,
+      });
+      refreshToken = loginRes.body.refreshToken;
+    });
+
+    test('should logout successfully with valid refresh token', async () => {
+      const response = await request(app)
+        .post('/auth/logout')
+        .send({ refreshToken })
+        .expect(200);
+
+      expect(response.text).toContain('Logged out successfully');
+    });
+
+    test('should return 400 if refresh token is missing', async () => {
+      const response = await request(app)
+        .post('/auth/logout')
+        .send({})
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+  });
+
+  describe('POST /auth/refresh', () => {
+    let refreshToken;
+
+    beforeEach(async () => {
+      // Get refresh token from login
+      const userData = {
+        username: 'RefreshUser',
+        email: 'refresh@example.com',
+        password: 'password123',
+      };
+      await request(app).post('/auth/register').send(userData);
+      const loginRes = await request(app).post('/auth/login').send({
+        email: userData.email,
+        password: userData.password,
+      });
+      refreshToken = loginRes.body.refreshToken;
+    });
+
+    test('should refresh tokens successfully', async () => {
+      const response = await request(app)
+        .post('/auth/refresh')
+        .send({ refreshToken })
+        .expect(200);
+
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('refreshToken');
+      expect(response.body.accessToken).not.toBe(refreshToken);
+    });
+
+    test('should return 401 if refresh token is missing', async () => {
+      const response = await request(app)
+        .post('/auth/refresh')
+        .send({})
+        .expect(401);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 403 with invalid refresh token', async () => {
+      const response = await request(app)
+        .post('/auth/refresh')
+        .send({ refreshToken: 'invalid_token' })
+        .expect(403);
+
+      expect(response.body).toHaveProperty('error');
+    });
+  });
+
+  // User routes tests
+  describe('GET /users', () => {
+    test('should return all users', async () => {
+      // Create additional users
+      await User.create({
+        username: 'User1',
+        email: 'user1@example.com',
+        password: 'hashedpassword',
+      });
+      await User.create({
+        username: 'User2',
+        email: 'user2@example.com',
+        password: 'hashedpassword',
+      });
+
+      const response = await request(app)
+        .get('/users')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThanOrEqual(2);
+      // Verify passwords are not included
+      response.body.forEach(user => {
+        expect(user).not.toHaveProperty('password');
+        expect(user).not.toHaveProperty('refreshTokens');
+      });
+    });
+
+    test('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .get('/users')
+        .expect(401);
+
+      expect(response.text).toContain('Access Denied');
+    });
+  });
+
+  describe('GET /users/:id', () => {
+    let userId;
+
+    beforeEach(async () => {
+      const user = await User.create({
+        username: 'GetUser',
+        email: 'getuser@example.com',
+        password: 'hashedpassword',
+      });
+      userId = user._id;
+    });
+
+    test('should return user by ID', async () => {
+      const response = await request(app)
+        .get(`/users/${userId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(200);
+
+      expect(response.body._id).toBe(userId.toString());
+      expect(response.body.username).toBe('GetUser');
+      expect(response.body).not.toHaveProperty('password');
+      expect(response.body).not.toHaveProperty('refreshTokens');
+    });
+
+    test('should return 404 if user not found', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const response = await request(app)
+        .get(`/users/${fakeId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(404);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .get(`/users/${userId}`)
+        .expect(401);
+
+      expect(response.text).toContain('Access Denied');
+    });
+  });
+
+  describe('POST /users', () => {
+    test('should create a new user', async () => {
+      const userData = {
+        username: 'NewUser2',
+        email: 'newuser2@example.com',
+        password: 'password123',
+      };
+
+      const response = await request(app)
+        .post('/users')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(userData)
+        .expect(201);
+
+      expect(response.body).toHaveProperty('_id');
+      expect(response.body.username).toBe(userData.username);
+      expect(response.body.email).toBe(userData.email);
+      expect(response.body).not.toHaveProperty('password');
+      expect(response.body).not.toHaveProperty('refreshTokens');
+    });
+
+    test('should return 400 if required fields are missing', async () => {
+      const response = await request(app)
+        .post('/users')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ username: 'TestUser' })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 400 if user already exists', async () => {
+      const userData = {
+        username: 'ExistingUser2',
+        email: 'existing2@example.com',
+        password: 'password123',
+      };
+
+      // Create user first
+      await request(app)
+        .post('/users')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(userData)
+        .expect(201);
+
+      // Try to create again
+      const response = await request(app)
+        .post('/users')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(userData)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .post('/users')
+        .send({
+          username: 'TestUser',
+          email: 'test@example.com',
+          password: 'password123',
+        })
+        .expect(401);
+
+      expect(response.text).toContain('Access Denied');
+    });
+  });
+
+  describe('PUT /users/:id', () => {
+    let userId;
+
+    beforeEach(async () => {
+      const user = await User.create({
+        username: 'UpdateUser',
+        email: 'updateuser@example.com',
+        password: 'hashedpassword',
+      });
+      userId = user._id;
+    });
+
+    test('should update a user', async () => {
+      const updateData = {
+        username: 'UpdatedUsername',
+        email: 'updated@example.com',
+      };
+
+      const response = await request(app)
+        .put(`/users/${userId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(updateData)
+        .expect(200);
+
+      expect(response.body.username).toBe(updateData.username);
+      expect(response.body.email).toBe(updateData.email);
+      expect(response.body).not.toHaveProperty('password');
+    });
+
+    test('should update user password', async () => {
+      const updateData = {
+        password: 'newPassword123',
+      };
+
+      const response = await request(app)
+        .put(`/users/${userId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(updateData)
+        .expect(200);
+
+      expect(response.body).not.toHaveProperty('password');
+      // Verify password was changed by checking refreshTokens were cleared
+      const updatedUser = await User.findById(userId);
+      expect(updatedUser.refreshTokens).toEqual([]);
+    });
+
+    test('should return 404 if user not found', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const response = await request(app)
+        .put(`/users/${fakeId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ username: 'Updated' })
+        .expect(404);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .put(`/users/${userId}`)
+        .send({ username: 'Updated' })
+        .expect(401);
+
+      expect(response.text).toContain('Access Denied');
+    });
+  });
+
+  describe('DELETE /users/:id', () => {
+    let userId;
+
+    beforeEach(async () => {
+      const user = await User.create({
+        username: 'DeleteUser',
+        email: 'deleteuser@example.com',
+        password: 'hashedpassword',
+      });
+      userId = user._id;
+    });
+
+    test('should delete a user', async () => {
+      const response = await request(app)
+        .delete(`/users/${userId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('deleted successfully');
+
+      // Verify user is actually deleted
+      const deletedUser = await User.findById(userId);
+      expect(deletedUser).toBeNull();
+    });
+
+    test('should return 404 if user not found', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const response = await request(app)
+        .delete(`/users/${fakeId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(404);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .delete(`/users/${userId}`)
+        .expect(401);
+
+      expect(response.text).toContain('Access Denied');
+    });
+  });
 });
